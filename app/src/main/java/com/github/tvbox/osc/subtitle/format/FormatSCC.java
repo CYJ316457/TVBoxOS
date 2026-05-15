@@ -653,7 +653,7 @@ public class FormatSCC implements TimedTextFileFormat {
 			case ')':
 				toReturn.append("29");
 				break;
-			case '�':
+			case '*':
 				toReturn.append("2a");
 				break;
 			case '+':
@@ -913,7 +913,7 @@ public class FormatSCC implements TimedTextFileFormat {
 	private String decodeChar(byte c) {
 		switch (c) {
 		case 42:
-			return "�";
+			return "*";
 		case 92:
 			return "é";
 		case 94:
@@ -925,7 +925,7 @@ public class FormatSCC implements TimedTextFileFormat {
 		case 123:
 			return "ç";
 		case 124:
-			return "�";
+			return "÷";
 		case 125:
 			return "Ñ";
 		case 126:
@@ -943,37 +943,37 @@ public class FormatSCC implements TimedTextFileFormat {
 	private String decodeSpecialChar(int word) {
 		switch (word) {
 		case 15:
-			return "�";
+			return "û";
 		case 14:
-			return "�";
+			return "ô";
 		case 13:
-			return "�";
+			return "î";
 		case 12:
-			return "�";
+			return "ê";
 		case 11:
-			return "�";
+			return "â";
 		case 10:
-			return "�";
+			return "è";
 		case 9:
 			return "\u00A0";
 		case 8:
-			return "�";
+			return "à";
 		case 7:
 			return "\u266A";
 		case 6:
-			return "�";
+			return "£";
 		case 5:
-			return "�";
+			return "¢";
 		case 4:
-			return "�";
+			return "™";
 		case 3:
-			return "�";
+			return "¿";
 		case 2:
-			return "�";
+			return "½";
 		case 1:
-			return "�";
+			return "°";
 		case 0:
-			return "�";
+			return "®";
 		default:
 			// unrecoginzed code
 			return "";
