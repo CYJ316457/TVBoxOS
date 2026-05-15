@@ -1,0 +1,65 @@
+name: 发布内置演示 APK
+
+on:
+  push:
+    tags:
+      - 'safe-demo-release-*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 发布标签名
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 计算发布标签
+        id: meta
+        run: |
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 安装 Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: 安装 Gradle 缓存
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 构建 normal debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleNormalDebug
+
+      - name: 整理发布文件
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/normal/debug/TVBox_debug-java.apk "release-assets/TVBox_内置演示_${{ steps.meta.outputs.tag }}.apk"
+
+      - name: 发布 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: 内置演示 APK ${{ steps.meta.outputs.tag }}
+          body: |
+            构建提交：`${{ github.sha }}`
+
+            本次发布包含：
+            - 修复内置演示配置在 `lives` 为空时的启动崩溃
+            - 补齐国内镜像下首次冷启动构建的插件解析兼容
+            - 仅内置本地演示配置，不包含第三方直播源配置
+          files: |
+            release-assets/*.apk
