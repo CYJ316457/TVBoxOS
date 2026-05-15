@@ -2,17 +2,17 @@
   "list": [
     {
       "vod_id": "demo-guide",
-      "vod_name": "??????????",
+      "vod_name": "替换内置配置说明",
       "vod_pic": "",
-      "type_name": "??",
+      "type_name": "指南",
       "vod_year": "2026",
-      "vod_area": "??",
-      "vod_remarks": "????",
+      "vod_area": "本地",
+      "vod_remarks": "替换说明",
       "vod_actor": "Codex",
       "vod_director": "Codex",
-      "vod_content": "???????????? app/src/main/assets/builtin/demo_config.json ?????????????????????????????",
-      "vod_play_from": "??",
-      "vod_play_url": "????$demo://replace-config"
+      "vod_content": "把你自己的源写进 app/src/main/assets/builtin/demo_config.json，重新打包后，启动时就会直接加载这份内置配置。",
+      "vod_play_from": "说明",
+      "vod_play_url": "查看说明$demo://replace-config"
     }
   ]
 }

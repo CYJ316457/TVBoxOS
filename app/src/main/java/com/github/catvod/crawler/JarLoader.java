@@ -124,6 +124,8 @@ public class JarLoader {
             return classLoaders.get(key);
         }
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/csp/" + key + ".jar");
+        File cacheDir = cache.getParentFile();
+        if (cacheDir != null && !cacheDir.exists()) cacheDir.mkdirs();
         if (!md5.isEmpty()) {
             if (cache.exists() && MD5.getFileMd5(cache).equalsIgnoreCase(md5)) {
                 if(loadClassLoader(cache.getAbsolutePath(), key)){
@@ -137,6 +139,18 @@ public class JarLoader {
                 if(loadClassLoader(cache.getAbsolutePath(), key)){
                     return classLoaders.get(key);
                 }
+            }
+        }
+        if (jar.startsWith("assets://")) {
+            try {
+                byte[] data = FileUtils.getAsBytes(jar.substring(9));
+                if (data == null || data.length == 0) return null;
+                FileUtils.writeSimple(data, cache);
+                loadClassLoader(cache.getAbsolutePath(), key);
+                return classLoaders.get(key);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                return null;
             }
         }
         try {

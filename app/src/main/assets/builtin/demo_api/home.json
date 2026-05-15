@@ -2,31 +2,31 @@
   "class": [
     {
       "type_id": "featured",
-      "type_name": "??"
+      "type_name": "推荐"
     },
     {
       "type_id": "guide",
-      "type_name": "??"
+      "type_name": "指南"
     }
   ],
   "list": [
     {
       "vod_id": "demo-film",
-      "vod_name": "??????",
+      "vod_name": "内置演示配置",
       "vod_pic": "",
-      "vod_remarks": "?? APK ??????",
-      "vod_content": "?????????????????????????????????",
-      "vod_play_from": "??",
-      "vod_play_url": "????$demo://builtin-config"
+      "vod_remarks": "随 APK 内置",
+      "vod_content": "这是打包进 APK 的内置演示源，用来确认 asset://builtin/demo_config.json 已被正确加载。",
+      "vod_play_from": "说明",
+      "vod_play_url": "查看演示$demo://builtin-config"
     },
     {
       "vod_id": "demo-guide",
-      "vod_name": "??????????",
+      "vod_name": "替换内置配置说明",
       "vod_pic": "",
-      "vod_remarks": "??????",
-      "vod_content": "?? APK ?????????????????????????? asset:// ?????????????????????",
-      "vod_play_from": "??",
-      "vod_play_url": "????$demo://replace-config"
+      "vod_remarks": "修改指引",
+      "vod_content": "如需写死自己的播放源，请直接修改 app/src/main/assets/builtin/demo_config.json，或改成你自己的 asset:// 配置路径。",
+      "vod_play_from": "说明",
+      "vod_play_url": "查看说明$demo://replace-config"
     }
   ]
 }

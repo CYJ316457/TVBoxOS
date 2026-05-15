@@ -2,17 +2,17 @@
   "list": [
     {
       "vod_id": "demo-film",
-      "vod_name": "??????",
+      "vod_name": "内置演示配置",
       "vod_pic": "",
-      "type_name": "??",
+      "type_name": "说明",
       "vod_year": "2026",
-      "vod_area": "??",
-      "vod_remarks": "????????????",
+      "vod_area": "本地",
+      "vod_remarks": "内置配置示例",
       "vod_actor": "Codex",
       "vod_director": "Codex",
-      "vod_content": "??????? APK ???????????????????????? assets??????????",
-      "vod_play_from": "??",
-      "vod_play_url": "????$demo://builtin-config"
+      "vod_content": "当前 APK 已内置演示配置，启动后会优先加载 app/src/main/assets/builtin/demo_config.json。",
+      "vod_play_from": "说明",
+      "vod_play_url": "查看演示$demo://builtin-config"
     }
   ]
 }
