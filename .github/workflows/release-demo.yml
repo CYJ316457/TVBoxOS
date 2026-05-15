@@ -1,0 +1,49 @@
+﻿name: Release demo APK
+
+on:
+  push:
+    tags:
+      - 'safe-demo-release-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build normal debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleNormalDebug
+
+      - name: Prepare release asset
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/normal/debug/TVBox_debug-java.apk "release-assets/TVBox_safe_demo_${{ github.ref_name }}.apk"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Safe built-in demo APK ${{ github.ref_name }}
+          body: |
+            Debug APK built from `${{ github.sha }}`.
+
+            Includes only the built-in asset-backed demo config.
+            Does not embed any third-party live source configuration.
+          files: |
+            release-assets/*.apk
