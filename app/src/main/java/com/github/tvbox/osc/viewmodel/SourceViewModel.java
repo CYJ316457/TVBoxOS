@@ -23,6 +23,7 @@ import com.github.tvbox.osc.player.thirdparty.RemoteTVBox;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.BuiltInConfigSupport;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.thunder.Thunder;
@@ -187,6 +188,12 @@ public class SourceViewModel extends ViewModel {
             };
             spThreadPool.execute(waitResponse);
         } else if (type == 0 || type == 1) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(sourceBean.getApi())) {
+                AbsSortXml sortXml = sortJson(sortResult, BuiltInConfigSupport.readSiteHome(sourceBean.getApi()));
+                sortResult.postValue(sortXml);
+                if (sortXml != null) sortCache.put(sourceKey, sortXml);
+                return;
+            }
             OkGo.<String>get(sourceBean.getApi())
                     .tag(sourceBean.getKey() + "_sort")
                     .execute(new AbsCallback<String>() {
@@ -351,6 +358,15 @@ public class SourceViewModel extends ViewModel {
                 }
             });
         } else if (type == 0 || type == 1) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(homeSourceBean.getApi())) {
+                String json = BuiltInConfigSupport.readSiteCategory(homeSourceBean.getApi(), sortData.id);
+                if (TextUtils.isEmpty(json)) {
+                    listResult.postValue(null);
+                } else {
+                    json(listResult, json, homeSourceBean.getKey());
+                }
+                return;
+            }
             OkGo.<String>get(homeSourceBean.getApi())
                     .tag(homeSourceBean.getApi())
                     .params("ac", type == 0 ? "videolist" : "detail")
@@ -493,6 +509,15 @@ public class SourceViewModel extends ViewModel {
             };
             spThreadPool.execute(waitResponse);
         } else if (type == 0 || type == 1) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(sourceBean.getApi())) {
+                AbsXml absXml = json(null, BuiltInConfigSupport.readSiteHome(sourceBean.getApi()), sourceBean.getKey());
+                if (absXml != null && absXml.movie != null && absXml.movie.videoList != null) {
+                    callback.done(absXml.movie.videoList);
+                } else {
+                    callback.done(null);
+                }
+                return;
+            }
             OkGo.<String>get(sourceBean.getApi())
                     .tag("detail")
                     .params("ac", sourceBean.getType() == 0 ? "videolist" : "detail")
@@ -591,6 +616,15 @@ public class SourceViewModel extends ViewModel {
                 }
             });
         } else if (type == 0 || type == 1|| type == 4) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(sourceBean.getApi())) {
+                String json = BuiltInConfigSupport.readSiteDetail(sourceBean.getApi(), id);
+                if (TextUtils.isEmpty(json)) {
+                    detailResult.postValue(null);
+                } else {
+                    json(detailResult, json, sourceBean.getKey());
+                }
+                return;
+            }
             String extend=sourceBean.getExt();
             extend=getFixUrl(extend);
 
@@ -653,6 +687,15 @@ public class SourceViewModel extends ViewModel {
                 json(searchResult, "", sourceBean.getKey());
             }
         } else if (type == 0 || type == 1) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(sourceBean.getApi())) {
+                String json = BuiltInConfigSupport.readSiteSearch(sourceBean.getApi());
+                if (TextUtils.isEmpty(json)) {
+                    EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_SEARCH_RESULT, null));
+                } else {
+                    json(searchResult, json, sourceBean.getKey());
+                }
+                return;
+            }
             OkGo.<String>get(sourceBean.getApi())
                     .params("wd", wd)
                     .params(type == 1 ? "ac" : null, type == 1 ? "detail" : null)
@@ -745,6 +788,15 @@ public class SourceViewModel extends ViewModel {
                 th.printStackTrace();
             }
         } else if (type == 0 || type == 1) {
+            if (type == 1 && BuiltInConfigSupport.isAssetUrl(sourceBean.getApi())) {
+                String json = BuiltInConfigSupport.readSiteSearch(sourceBean.getApi());
+                if (TextUtils.isEmpty(json)) {
+                    EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_QUICK_SEARCH_RESULT, null));
+                } else {
+                    json(quickSearchResult, json, sourceBean.getKey());
+                }
+                return;
+            }
             OkGo.<String>get(sourceBean.getApi())
                     .params("wd", wd)
                     .params(type == 1 ? "ac" : null, type == 1 ? "detail" : null)

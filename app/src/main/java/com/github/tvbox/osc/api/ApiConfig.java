@@ -23,6 +23,7 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.util.AES;
 import com.github.tvbox.osc.util.AdBlocker;
+import com.github.tvbox.osc.util.BuiltInConfigSupport;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
@@ -151,6 +152,9 @@ public class ApiConfig {
     private String TempKey = null;
     private String configUrl(String apiUrl){
         String configUrl = "", pk = ";pk;";
+        if (BuiltInConfigSupport.isAssetUrl(apiUrl)) {
+            return apiUrl;
+        }
         apiUrl=apiUrl.replace("file://", "clan://localhost/");
         if (apiUrl.contains(pk)) {
             String[] a = apiUrl.split(pk);
@@ -172,7 +176,15 @@ public class ApiConfig {
         return configUrl;
     }
     public void loadConfig(boolean useCache, LoadConfigCallback callback, Activity activity) {
-        String apiUrl = Hawk.get(HawkConfig.API_URL, "");
+        String resolvedApiUrl = Hawk.get(HawkConfig.API_URL, "");
+        if (TextUtils.isEmpty(resolvedApiUrl)) {
+            resolvedApiUrl = BuiltInConfigSupport.DEFAULT_CONFIG_URL;
+            Hawk.put(HawkConfig.API_URL, resolvedApiUrl);
+            if (TextUtils.isEmpty(Hawk.get(HawkConfig.LIVE_API_URL, ""))) {
+                Hawk.put(HawkConfig.LIVE_API_URL, resolvedApiUrl);
+            }
+        }
+        final String apiUrl = resolvedApiUrl;
         //独立加载直播配置
         String liveApiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
         String liveApiConfigUrl=configUrl(liveApiUrl);
@@ -243,6 +255,21 @@ public class ApiConfig {
 
         if (apiUrl.isEmpty()) {
             callback.error("-1");
+            return;
+        }
+        if (BuiltInConfigSupport.isAssetUrl(apiUrl)) {
+            try {
+                String json = BuiltInConfigSupport.readConfig(apiUrl);
+                if (TextUtils.isEmpty(json)) {
+                    callback.error("Built-in demo config is empty");
+                    return;
+                }
+                parseJson(apiUrl, json);
+                callback.success();
+            } catch (Throwable th) {
+                th.printStackTrace();
+                callback.error("Failed to load built-in demo config");
+            }
             return;
         }
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/" + MD5.encode(apiUrl));

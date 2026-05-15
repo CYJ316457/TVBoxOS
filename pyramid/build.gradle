@@ -1,6 +1,10 @@
 plugins {
     id 'com.android.library'
-    id 'com.chaquo.python'
+}
+
+def enablePythonPlugin = gradle.startParameter.taskNames.any { it.toLowerCase().contains('python') }
+if (enablePythonPlugin) {
+    apply plugin: 'com.chaquo.python'
 }
 
 android {
@@ -14,17 +18,19 @@ android {
             //noinspection ChromeOsAbiSupport
             abiFilters "armeabi-v7a"
         }
-        python {
-            buildPython("D:/Programs/Python/Python38/python.exe")
-            pip {
-                install "lxml"
-                install "ujson"
-                install "pyquery"
-                install "requests"
-                install "jsonpath"
-                install "cachetools"
-                install 'pycryptodome'
-                install 'beautifulsoup4'
+        if (enablePythonPlugin) {
+            python {
+                buildPython("D:/Programs/Python/Python38/python.exe")
+                pip {
+                    install "lxml"
+                    install "ujson"
+                    install "pyquery"
+                    install "requests"
+                    install "jsonpath"
+                    install "cachetools"
+                    install 'pycryptodome'
+                    install 'beautifulsoup4'
+                }
             }
         }
     }
@@ -51,7 +57,9 @@ android {
             // Android代码模块
             setRoot "src/main"
             // Python代码模块，也就是你的Python源码所在项目中的文件夹
-            python.srcDirs = ["src/python"]
+            if (enablePythonPlugin) {
+                python.srcDirs = ["src/python"]
+            }
         }
     }
     buildToolsVersion '30.0.3'
