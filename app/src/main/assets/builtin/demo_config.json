@@ -1,0 +1,21 @@
+{
+  "wallpaper": "",
+  "spider": "",
+  "warningText": "??????????????????? APK ????????????????",
+  "sites": [
+    {
+      "key": "demo_local",
+      "name": "????",
+      "type": 1,
+      "api": "asset://builtin/demo_api",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1,
+      "changeable": 0,
+      "playerType": 2
+    }
+  ],
+  "parses": [],
+  "lives": [],
+  "rules": []
+}
