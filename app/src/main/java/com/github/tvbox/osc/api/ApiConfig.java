@@ -32,6 +32,7 @@ import com.github.tvbox.osc.util.M3u8;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.VideoParseRuler;
+import com.github.tvbox.osc.util.live.TxtSubscribe;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -176,13 +177,16 @@ public class ApiConfig {
         return configUrl;
     }
     public void loadConfig(boolean useCache, LoadConfigCallback callback, Activity activity) {
-        String resolvedApiUrl = Hawk.get(HawkConfig.API_URL, "");
-        if (TextUtils.isEmpty(resolvedApiUrl)) {
-            resolvedApiUrl = BuiltInConfigSupport.DEFAULT_CONFIG_URL;
+        // 这个定制包要求始终使用内置播放源，不能继续沿用旧安装里缓存的外部配置地址。
+        String resolvedApiUrl = BuiltInConfigSupport.DEFAULT_CONFIG_URL;
+        String storedApiUrl = Hawk.get(HawkConfig.API_URL, "");
+        if (!resolvedApiUrl.equals(storedApiUrl)) {
             Hawk.put(HawkConfig.API_URL, resolvedApiUrl);
-            if (TextUtils.isEmpty(Hawk.get(HawkConfig.LIVE_API_URL, ""))) {
-                Hawk.put(HawkConfig.LIVE_API_URL, resolvedApiUrl);
-            }
+            Hawk.put(HawkConfig.HOME_API, "");
+        }
+        if (!resolvedApiUrl.equals(Hawk.get(HawkConfig.LIVE_API_URL, ""))) {
+            Hawk.put(HawkConfig.LIVE_API_URL, resolvedApiUrl);
+            Hawk.put(HawkConfig.LIVE_GROUP_INDEX, 0);
         }
         final String apiUrl = resolvedApiUrl;
         //独立加载直播配置
@@ -343,6 +347,8 @@ public class ApiConfig {
         String jarUrl = urls[0];
         String md5 = urls.length > 1 ? urls[1].trim() : "";
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/csp/"+MD5.string2MD5(jarUrl)+".jar");
+        File cacheDir = cache.getParentFile();
+        if (cacheDir != null && !cacheDir.exists()) cacheDir.mkdirs();
 
         if (!md5.isEmpty() || useCache) {
             if (cache.exists() && (useCache || MD5.getFileMd5(cache).equalsIgnoreCase(md5))) {
@@ -361,6 +367,26 @@ public class ApiConfig {
                     return;
                 }
             }
+        }
+
+        if (jarUrl.startsWith("assets://")) {
+            try {
+                byte[] data = FileUtils.getAsBytes(jarUrl.substring(9));
+                if (data == null || data.length == 0) {
+                    callback.error("内置 JAR 为空");
+                    return;
+                }
+                FileUtils.writeSimple(data, cache);
+                if (jarLoader.load(cache.getAbsolutePath())) {
+                    callback.success();
+                } else {
+                    callback.error("内置 JAR 加载失败");
+                }
+            } catch (Throwable th) {
+                th.printStackTrace();
+                callback.error("内置 JAR 读取失败");
+            }
+            return;
         }
 
         boolean isJarInImg = jarUrl.startsWith("img+");
@@ -454,6 +480,11 @@ public class ApiConfig {
     private void parseJson(String apiUrl, String jsonStr) {
 //        pyLoader.setConfig(jsonStr);
         JsonObject infoJson = gson.fromJson(jsonStr, JsonObject.class);
+        sourceBeanList.clear();
+        searchSourceBeanList.clear();
+        parseBeanList.clear();
+        mHomeSource = null;
+        mDefaultParse = null;
         // spider
         spider = DefaultConfig.safeJsonString(infoJson, "spider", "");
         jarCache = DefaultConfig.safeJsonString(infoJson, "jarCache", "true");
@@ -500,7 +531,6 @@ public class ApiConfig {
         // 需要使用vip解析的flag
         vipParseFlags = DefaultConfig.safeJsonStringList(infoJson, "flags");
         // 解析地址
-        parseBeanList.clear();
         if(infoJson.has("parses")){
             JsonArray parses = infoJson.get("parses").getAsJsonArray();
             for (JsonElement opt : parses) {
@@ -880,6 +910,17 @@ public class ApiConfig {
                     url = livesOBJ.has("url")?livesOBJ.get("url").getAsString():"";
                     if(url.isEmpty())url=livesOBJ.has("api")?livesOBJ.get("api").getAsString():"";
                     LOG.i("echo-liveurl"+url);
+                    if (url.startsWith("assets://")) {
+                        String liveText = FileUtils.getAsOpen(url.substring(9));
+                        if (TextUtils.isEmpty(liveText)) {
+                            liveChannelGroupList.clear();
+                            return;
+                        }
+                        LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> liveMap = new LinkedHashMap<>();
+                        TxtSubscribe.parse(liveMap, liveText);
+                        loadLives(TxtSubscribe.live2JsonArray(liveMap));
+                        return;
+                    }
                     if(!url.startsWith("http://127.0.0.1")){
                         if(url.startsWith("http")){
                             url = Base64.encodeToString(url.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);

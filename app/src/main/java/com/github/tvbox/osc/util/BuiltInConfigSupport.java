@@ -6,12 +6,13 @@ public final class BuiltInConfigSupport {
 
     public static final String DEFAULT_CONFIG_URL = "asset://builtin/demo_config.json";
     private static final String ASSET_SCHEME = "asset://";
+    private static final String ASSETS_SCHEME = "assets://";
 
     private BuiltInConfigSupport() {
     }
 
     public static boolean isAssetUrl(String url) {
-        return !TextUtils.isEmpty(url) && url.startsWith(ASSET_SCHEME);
+        return !TextUtils.isEmpty(url) && (url.startsWith(ASSET_SCHEME) || url.startsWith(ASSETS_SCHEME));
     }
 
     public static String readConfig(String url) {
@@ -56,6 +57,9 @@ public final class BuiltInConfigSupport {
     }
 
     private static String stripScheme(String url) {
+        if (url.startsWith(ASSETS_SCHEME)) {
+            return url.substring(ASSETS_SCHEME.length());
+        }
         return url.substring(ASSET_SCHEME.length());
     }
 
